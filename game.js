@@ -23,14 +23,20 @@ function unlockSounds() {
     if (soundsUnlocked) return;
     soundsUnlocked = true;
 
-    // Play silent audio to unlock on iOS
+    // Play silent audio to unlock on iOS - must be synchronous
     Object.values(sounds).forEach(sound => {
-        sound.volume = 0;
-        sound.play().then(() => {
-            sound.pause();
-            sound.currentTime = 0;
-            sound.volume = 1;
-        }).catch(() => {});
+        const originalVolume = sound.volume;
+        sound.volume = 0.01;
+        const playPromise = sound.play();
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                sound.pause();
+                sound.currentTime = 0;
+                sound.volume = 1;
+            }).catch(() => {
+                sound.volume = 1;
+            });
+        }
     });
 }
 
@@ -362,9 +368,6 @@ function handleDrop(e) {
 
 // Touch handlers for mobile
 function handleTouchStart(e) {
-    // Unlock sounds on first touch
-    unlockSounds();
-
     const touch = e.touches[0];
     touchStartTime = Date.now();
     touchStartX = touch.clientX;
@@ -372,6 +375,9 @@ function handleTouchStart(e) {
     isDragging = false;
 
     touchDragNumber = parseInt(e.target.dataset.number);
+
+    // Unlock sounds on first touch - must be synchronous during touch event
+    unlockSounds();
 }
 
 function handleTouchMove(e) {
