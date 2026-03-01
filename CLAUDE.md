@@ -17,6 +17,12 @@ Key game functions:
 - `placeNumber()` — validates input against solution, shows error animation on wrong answers
 - `checkWin()` — compares `userInput` against `solution`
 
-## Known Bugs
+## Browser Automation
 
-There are index calculation bugs in the code — `updateCellHighlights()`, `placeNumber()`, and `checkWin()` use grid dimensions of 6 instead of 4 (likely remnants from an earlier 6x6 version). These should be fixed to use 4.
+Use `agent-browser` for web automation. Run `agent-browser --help` for all commands.
+
+Core workflow:
+1. `agent-browser open <url>` - Navigate to page
+2. `agent-browser snapshot -i` - Get interactive elements with refs (@e1, @e2)
+3. `agent-browser click @e1` / `fill @e2 "text"` - Interact using refs
+4. Re-snapshot after page changes
