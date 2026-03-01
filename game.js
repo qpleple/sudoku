@@ -260,11 +260,4 @@ function createConfetti() {
     }
 }
 
-// Touch handling
-document.addEventListener('touchstart', function(e) {
-    if (e.target.classList.contains('cell') ||
-        e.target.classList.contains('number-btn') ||
-        e.target.classList.contains('control-btn')) {
-        e.preventDefault();
-    }
-}, { passive: false });
+// Touch handling - allow default behavior for clicks to work on mobile
