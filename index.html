@@ -568,9 +568,8 @@
         let solution = [];
         let userInput = [];
         let muted = false;
-        let soundsEnabled = false;
 
-        // Sound effects
+        // Sound effects - preload
         const sounds = {
             tap: new Audio('sounds/tap.mp3'),
             correct: new Audio('sounds/correct.mp3'),
@@ -579,20 +578,10 @@
             newgame: new Audio('sounds/newgame.mp3'),
         };
 
-        // Enable sounds on first user interaction (required for iOS/Safari)
-        function enableSounds() {
-            if (soundsEnabled) return;
-            soundsEnabled = true;
-            // Play silent audio to unlock on iOS
-            Object.values(sounds).forEach(sound => {
-                sound.volume = 0;
-                sound.play().then(() => {
-                    sound.pause();
-                    sound.currentTime = 0;
-                    sound.volume = 1;
-                }).catch(() => {});
-            });
-        }
+        // Preload all sounds
+        Object.values(sounds).forEach(sound => {
+            sound.load();
+        });
 
         function playSound(name) {
             if (muted) return;
@@ -612,7 +601,6 @@
         newGame();
 
         function newGame() {
-            enableSounds();
             playSound('newgame');
             document.getElementById('message').innerHTML = '';
             generatePuzzle();
@@ -725,7 +713,6 @@
         }
 
         function selectCell(row, col) {
-            enableSounds();
             if (puzzle[row][col] !== 0) return;
 
             selectedCell = { row, col };
@@ -748,7 +735,6 @@
         }
 
         function placeNumber(num) {
-            enableSounds();
             if (!selectedCell) {
                 showMessage('👆 Pick a square first!');
                 return;
