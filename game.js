@@ -3,6 +3,7 @@ let puzzle = [];
 let solution = [];
 let userInput = [];
 let muted = false;
+let soundsUnlocked = false;
 
 // Sound effects - preload
 const sounds = {
@@ -17,6 +18,21 @@ const sounds = {
 Object.values(sounds).forEach(sound => {
     sound.load();
 });
+
+function unlockSounds() {
+    if (soundsUnlocked) return;
+    soundsUnlocked = true;
+
+    // Play silent audio to unlock on iOS
+    Object.values(sounds).forEach(sound => {
+        sound.volume = 0;
+        sound.play().then(() => {
+            sound.pause();
+            sound.currentTime = 0;
+            sound.volume = 1;
+        }).catch(() => {});
+    });
+}
 
 function playSound(name) {
     if (muted) return;
@@ -36,6 +52,7 @@ function toggleMute() {
 newGame();
 
 function newGame() {
+    unlockSounds();
     playSound('newgame');
     document.getElementById('message').innerHTML = '';
     generatePuzzle();
@@ -164,6 +181,7 @@ function renderNumberPad() {
 }
 
 function selectCell(row, col) {
+    unlockSounds();
     if (puzzle[row][col] !== 0) return;
 
     selectedCell = { row, col };
@@ -316,6 +334,10 @@ function handleDrop(e) {
 // Touch handlers for mobile
 function handleTouchStart(e) {
     e.preventDefault();
+
+    // Unlock sounds on first touch
+    unlockSounds();
+
     touchDragNumber = parseInt(e.target.dataset.number);
     e.target.style.opacity = '0.5';
 
