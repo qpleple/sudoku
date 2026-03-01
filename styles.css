@@ -181,35 +181,10 @@ h1 {
     border-color: #43A047;
 }
 
-/* Block dividers for 2x2 sections */
-.cell:nth-child(5),
-.cell:nth-child(6),
-.cell:nth-child(7),
-.cell:nth-child(8) {
-    margin-top: 8px;
-}
-
-.cell:nth-child(4n+3),
-.cell:nth-child(4n+4) {
-    margin-left: 8px;
-}
-
 @media (max-width: 420px) {
     .cell {
         border-radius: 6px;
         font-size: clamp(20px, 6vw, 36px);
-    }
-
-    .cell:nth-child(5),
-    .cell:nth-child(6),
-    .cell:nth-child(7),
-    .cell:nth-child(8) {
-        margin-top: 4px;
-    }
-
-    .cell:nth-child(4n+3),
-    .cell:nth-child(4n+4) {
-        margin-left: 4px;
     }
 }
 
