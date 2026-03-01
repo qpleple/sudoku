@@ -145,7 +145,7 @@ h1 {
     aspect-ratio: 1;
     background: #FFFFFF;
     border: 2px solid #E0E0E0;
-    font-size: clamp(64px, 15vw, 96px);
+    font-size: clamp(48px, 15vw, 72px);
     font-weight: 700;
     color: #212121;
     cursor: pointer;
@@ -153,6 +153,11 @@ h1 {
     transition: all 0.15s ease;
     position: relative;
     touch-action: manipulation;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
 }
 
 .cell:not(.fixed):active {
@@ -164,6 +169,7 @@ h1 {
     color: #37474F;
     cursor: default;
     border-color: #B0BEC5;
+    pointer-events: none;
 }
 
 .cell.selected {
@@ -200,7 +206,7 @@ h1 {
 @media (max-width: 420px) {
     .cell {
         border-radius: 6px;
-        font-size: clamp(56px, 14vw, 80px);
+        font-size: clamp(40px, 14vw, 64px);
     }
 }
 
