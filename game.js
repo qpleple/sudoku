@@ -6,11 +6,11 @@ let muted = false;
 
 // Sound effects - preload
 const sounds = {
-    tap: new Audio('sounds/tap.mp3'),
-    correct: new Audio('sounds/correct.mp3'),
-    wrong: new Audio('sounds/wrong.mp3'),
-    win: new Audio('sounds/win.mp3'),
-    newgame: new Audio('sounds/newgame.mp3'),
+    tap: new Audio('sounds/tap.mp3?v=1'),
+    correct: new Audio('sounds/correct.mp3?v=1'),
+    wrong: new Audio('sounds/wrong.mp3?v=1'),
+    win: new Audio('sounds/win.mp3?v=1'),
+    newgame: new Audio('sounds/newgame.mp3?v=1'),
 };
 
 // Preload all sounds
