@@ -282,7 +282,7 @@ function checkWin() {
 }
 
 function createConfetti() {
-    const colors = ['#FF6B9D', '#FFA07A', '#98D8C8', '#A7C7E7', '#FFD93D', '#B19CD9'];
+    const colors = ['#EF594A', '#FFA1D5', '#84AC5C', '#AEACD1', '#C95A97', '#FFD93D'];
 
     for (let i = 0; i < 50; i++) {
         setTimeout(() => {
