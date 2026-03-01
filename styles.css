@@ -179,6 +179,14 @@ h1 {
     transform: scale(1.05);
 }
 
+.cell.drag-closest {
+    background: #FFF59D;
+    border-color: #FBC02D;
+    border-width: 4px;
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(251, 192, 45, 0.6);
+}
+
 .cell.error {
     background: #FFEBEE;
     border-color: #E53935;

@@ -297,7 +297,32 @@ function createConfetti() {
 let draggedNumber = null;
 let touchDragNumber = null;
 let currentHoverCell = null;
+let currentClosestCell = null;
 let dragGhost = null;
+
+function getClosestEmptyCell(x, y) {
+    const cells = document.querySelectorAll('.cell:not(.fixed)');
+    let closest = null;
+    let minDistance = Infinity;
+
+    cells.forEach(cell => {
+        const rect = cell.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+
+        const row = parseInt(cell.dataset.row);
+        const col = parseInt(cell.dataset.col);
+
+        // Only consider empty cells
+        if (puzzle[row][col] === 0 && distance < minDistance) {
+            minDistance = distance;
+            closest = cell;
+        }
+    });
+
+    return closest;
+}
 
 function handleDragStart(e) {
     draggedNumber = parseInt(e.target.dataset.number);
@@ -375,12 +400,24 @@ function handleTouchMove(e) {
         currentHoverCell.classList.remove('drag-over');
     }
 
-    // Add highlight to current cell
+    // Add highlight to current cell if hovering over it
     if (elementUnder && elementUnder.classList.contains('cell') && !elementUnder.classList.contains('fixed')) {
         elementUnder.classList.add('drag-over');
         currentHoverCell = elementUnder;
     } else {
         currentHoverCell = null;
+    }
+
+    // Always highlight the closest empty cell
+    const closestCell = getClosestEmptyCell(touch.clientX, touch.clientY);
+    if (currentClosestCell !== closestCell) {
+        if (currentClosestCell) {
+            currentClosestCell.classList.remove('drag-closest');
+        }
+        if (closestCell) {
+            closestCell.classList.add('drag-closest');
+            currentClosestCell = closestCell;
+        }
     }
 }
 
@@ -395,23 +432,28 @@ function handleTouchEnd(e) {
     }
 
     const touch = e.changedTouches[0];
-    const elementUnder = document.elementFromPoint(touch.clientX, touch.clientY);
 
+    // Remove all highlights
     if (currentHoverCell) {
         currentHoverCell.classList.remove('drag-over');
     }
+    if (currentClosestCell) {
+        currentClosestCell.classList.remove('drag-closest');
+    }
 
-    if (elementUnder && elementUnder.classList.contains('cell') && !elementUnder.classList.contains('fixed')) {
-        const row = parseInt(elementUnder.dataset.row);
-        const col = parseInt(elementUnder.dataset.col);
+    // Try to place in the closest empty cell
+    if (touchDragNumber && currentClosestCell) {
+        const row = parseInt(currentClosestCell.dataset.row);
+        const col = parseInt(currentClosestCell.dataset.col);
 
-        if (touchDragNumber && puzzle[row][col] === 0) {
+        if (puzzle[row][col] === 0) {
             placeNumberInCell(row, col, touchDragNumber);
         }
     }
 
     touchDragNumber = null;
     currentHoverCell = null;
+    currentClosestCell = null;
 }
 
 function placeNumberInCell(row, col, num) {
