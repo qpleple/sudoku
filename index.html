@@ -595,7 +595,7 @@
         }
 
         function playSound(name) {
-            if (muted || !soundsEnabled) return;
+            if (muted) return;
             const s = sounds[name];
             if (s) {
                 s.currentTime = 0;
