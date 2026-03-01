@@ -145,7 +145,7 @@ h1 {
     aspect-ratio: 1;
     background: #FFFFFF;
     border: 2px solid #E0E0E0;
-    font-size: clamp(48px, 12vw, 72px);
+    font-size: clamp(64px, 15vw, 96px);
     font-weight: 700;
     color: #212121;
     cursor: pointer;
@@ -185,7 +185,7 @@ h1 {
 @media (max-width: 420px) {
     .cell {
         border-radius: 6px;
-        font-size: clamp(40px, 11vw, 64px);
+        font-size: clamp(56px, 14vw, 80px);
     }
 }
 
@@ -205,7 +205,7 @@ h1 {
 
 .number-btn {
     aspect-ratio: 2;
-    font-size: clamp(48px, 13vw, 80px);
+    font-size: clamp(64px, 16vw, 100px);
     font-weight: 700;
     border: none;
     border-radius: 12px;
@@ -220,7 +220,7 @@ h1 {
 @media (max-width: 420px) {
     .number-btn {
         border-radius: 8px;
-        font-size: clamp(44px, 12vw, 68px);
+        font-size: clamp(60px, 15vw, 84px);
         aspect-ratio: 2.2;
     }
 }
