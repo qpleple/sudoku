@@ -279,6 +279,7 @@ function createConfetti() {
 let draggedNumber = null;
 let touchDragNumber = null;
 let currentHoverCell = null;
+let dragGhost = null;
 
 function handleDragStart(e) {
     draggedNumber = parseInt(e.target.dataset.number);
@@ -317,11 +318,34 @@ function handleTouchStart(e) {
     e.preventDefault();
     touchDragNumber = parseInt(e.target.dataset.number);
     e.target.style.opacity = '0.5';
+
+    // Create drag ghost element
+    dragGhost = document.createElement('div');
+    dragGhost.className = 'drag-ghost';
+    dragGhost.textContent = touchDragNumber;
+
+    // Set color based on number
+    const colors = ['#E91E63', '#FF6D00', '#00BFA5', '#2196F3'];
+    dragGhost.style.background = colors[touchDragNumber - 1];
+
+    document.body.appendChild(dragGhost);
+
+    // Position at touch point
+    const touch = e.touches[0];
+    dragGhost.style.left = touch.clientX + 'px';
+    dragGhost.style.top = touch.clientY + 'px';
 }
 
 function handleTouchMove(e) {
     e.preventDefault();
     const touch = e.touches[0];
+
+    // Move drag ghost with touch
+    if (dragGhost) {
+        dragGhost.style.left = touch.clientX + 'px';
+        dragGhost.style.top = touch.clientY + 'px';
+    }
+
     const elementUnder = document.elementFromPoint(touch.clientX, touch.clientY);
 
     // Remove highlight from previous cell
@@ -341,6 +365,12 @@ function handleTouchMove(e) {
 function handleTouchEnd(e) {
     e.preventDefault();
     e.target.style.opacity = '1';
+
+    // Remove drag ghost
+    if (dragGhost) {
+        dragGhost.remove();
+        dragGhost = null;
+    }
 
     const touch = e.changedTouches[0];
     const elementUnder = document.elementFromPoint(touch.clientX, touch.clientY);
