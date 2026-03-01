@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🎮 Sudoku for Kids</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: white;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: clamp(24px, 8vw, 36px);
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .grid-container {
+            background: white;
+            padding: 8px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+
+        .sudoku-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 4px;
+            background: #333;
+            padding: 4px;
+            border-radius: 8px;
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            background: white;
+            border: none;
+            font-size: clamp(20px, 6vw, 32px);
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 4px;
+        }
+
+        .cell:not(.fixed):active {
+            transform: scale(0.95);
+            background: #e3f2fd;
+        }
+
+        .cell.fixed {
+            background: #f5f5f5;
+            color: #666;
+            cursor: default;
+        }
+
+        .cell.selected {
+            background: #bbdefb;
+            box-shadow: inset 0 0 0 3px #2196F3;
+        }
+
+        .cell.error {
+            background: #ffcdd2;
+            animation: shake 0.3s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .cell.same-number {
+            background: #fff9c4;
+        }
+
+        .number-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .number-btn {
+            aspect-ratio: 1.5;
+            font-size: clamp(24px, 7vw, 36px);
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .number-btn:active {
+            transform: scale(0.95);
+        }
+
+        .number-btn:nth-child(1) { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .number-btn:nth-child(2) { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .number-btn:nth-child(3) { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .number-btn:nth-child(4) { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .number-btn:nth-child(5) { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
+        .number-btn:nth-child(6) { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #333; }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .control-btn {
+            padding: 16px;
+            font-size: clamp(16px, 4vw, 20px);
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+            color: #667eea;
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        .message {
+            text-align: center;
+            font-size: clamp(18px, 5vw, 24px);
+            margin-bottom: 20px;
+            min-height: 32px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .celebration {
+            font-size: clamp(48px, 12vw, 64px);
+            animation: bounce 0.5s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Grid block borders */
+        .cell:nth-child(6n+1),
+        .cell:nth-child(6n+2),
+        .cell:nth-child(6n+3) {
+            position: relative;
+        }
+
+        .cell:nth-child(-n+18) {
+            border-bottom: 2px solid #666;
+        }
+
+        .cell:nth-child(6n+3) {
+            border-right: 2px solid #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Sudoku Fun! 🎮</h1>
+
+        <div class="message" id="message"></div>
+
+        <div class="grid-container">
+            <div class="sudoku-grid" id="grid"></div>
+        </div>
+
+        <div class="number-pad" id="numberPad"></div>
+
+        <div class="controls">
+            <button class="control-btn" onclick="clearCell()">❌ Clear</button>
+            <button class="control-btn" onclick="newGame()">🎲 New Game</button>
+        </div>
+    </div>
+
+    <script>
+        let selectedCell = null;
+        let puzzle = [];
+        let solution = [];
+        let userInput = [];
+
+        // Initialize
+        newGame();
+
+        function newGame() {
+            document.getElementById('message').innerHTML = '';
+            generatePuzzle();
+            renderGrid();
+            renderNumberPad();
+        }
+
+        function generatePuzzle() {
+            // Generate a valid 6x6 sudoku solution
+            solution = generateSolution();
+
+            // Create puzzle by removing numbers
+            puzzle = solution.map(row => [...row]);
+            userInput = puzzle.map(row => [...row]);
+
+            // Remove numbers to create puzzle (easier for 4yo - remove fewer numbers)
+            const cellsToRemove = 15; // Out of 36 total cells
+            let removed = 0;
+
+            while (removed < cellsToRemove) {
+                const row = Math.floor(Math.random() * 6);
+                const col = Math.floor(Math.random() * 6);
+
+                if (puzzle[row][col] !== 0) {
+                    puzzle[row][col] = 0;
+                    userInput[row][col] = 0;
+                    removed++;
+                }
+            }
+        }
+
+        function generateSolution() {
+            const grid = Array(6).fill(0).map(() => Array(6).fill(0));
+
+            function isValid(grid, row, col, num) {
+                // Check row
+                for (let x = 0; x < 6; x++) {
+                    if (grid[row][x] === num) return false;
+                }
+
+                // Check column
+                for (let x = 0; x < 6; x++) {
+                    if (grid[x][col] === num) return false;
+                }
+
+                // Check 2x3 box
+                const boxRow = Math.floor(row / 2) * 2;
+                const boxCol = Math.floor(col / 3) * 3;
+                for (let i = 0; i < 2; i++) {
+                    for (let j = 0; j < 3; j++) {
+                        if (grid[boxRow + i][boxCol + j] === num) return false;
+                    }
+                }
+
+                return true;
+            }
+
+            function solve(grid) {
+                for (let row = 0; row < 6; row++) {
+                    for (let col = 0; col < 6; col++) {
+                        if (grid[row][col] === 0) {
+                            const numbers = [1, 2, 3, 4, 5, 6].sort(() => Math.random() - 0.5);
+                            for (let num of numbers) {
+                                if (isValid(grid, row, col, num)) {
+                                    grid[row][col] = num;
+                                    if (solve(grid)) return true;
+                                    grid[row][col] = 0;
+                                }
+                            }
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+
+            solve(grid);
+            return grid;
+        }
+
+        function renderGrid() {
+            const gridEl = document.getElementById('grid');
+            gridEl.innerHTML = '';
+
+            for (let row = 0; row < 6; row++) {
+                for (let col = 0; col < 6; col++) {
+                    const cell = document.createElement('button');
+                    cell.className = 'cell';
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+
+                    if (puzzle[row][col] !== 0) {
+                        cell.textContent = puzzle[row][col];
+                        cell.classList.add('fixed');
+                    } else {
+                        cell.textContent = userInput[row][col] || '';
+                        cell.onclick = () => selectCell(row, col);
+                    }
+
+                    gridEl.appendChild(cell);
+                }
+            }
+        }
+
+        function renderNumberPad() {
+            const padEl = document.getElementById('numberPad');
+            padEl.innerHTML = '';
+
+            for (let i = 1; i <= 6; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'number-btn';
+                btn.textContent = i;
+                btn.onclick = () => placeNumber(i);
+                padEl.appendChild(btn);
+            }
+        }
+
+        function selectCell(row, col) {
+            if (puzzle[row][col] !== 0) return; // Can't select fixed cells
+
+            selectedCell = { row, col };
+            updateCellHighlights();
+        }
+
+        function updateCellHighlights() {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach((cell, idx) => {
+                const row = Math.floor(idx / 6);
+                const col = idx % 6;
+
+                cell.classList.remove('selected', 'same-number', 'error');
+
+                if (selectedCell && selectedCell.row === row && selectedCell.col === col) {
+                    cell.classList.add('selected');
+                }
+
+                // Highlight same numbers
+                if (selectedCell && userInput[row][col] !== 0 &&
+                    userInput[row][col] === userInput[selectedCell.row][selectedCell.col]) {
+                    cell.classList.add('same-number');
+                }
+            });
+        }
+
+        function placeNumber(num) {
+            if (!selectedCell) {
+                document.getElementById('message').textContent = '👆 Pick a square first!';
+                setTimeout(() => document.getElementById('message').textContent = '', 2000);
+                return;
+            }
+
+            const { row, col } = selectedCell;
+
+            if (puzzle[row][col] !== 0) return; // Can't modify fixed cells
+
+            userInput[row][col] = num;
+
+            // Check if correct
+            if (num === solution[row][col]) {
+                renderGrid();
+                checkWin();
+            } else {
+                // Show error
+                const cells = document.querySelectorAll('.cell');
+                const idx = row * 6 + col;
+                cells[idx].classList.add('error');
+                setTimeout(() => {
+                    userInput[row][col] = 0;
+                    renderGrid();
+                    selectCell(row, col);
+                }, 500);
+            }
+        }
+
+        function clearCell() {
+            if (!selectedCell) {
+                document.getElementById('message').textContent = '👆 Pick a square first!';
+                setTimeout(() => document.getElementById('message').textContent = '', 2000);
+                return;
+            }
+
+            const { row, col } = selectedCell;
+            if (puzzle[row][col] === 0) {
+                userInput[row][col] = 0;
+                renderGrid();
+                selectCell(row, col);
+            }
+        }
+
+        function checkWin() {
+            for (let row = 0; row < 6; row++) {
+                for (let col = 0; col < 6; col++) {
+                    if (userInput[row][col] !== solution[row][col]) {
+                        return;
+                    }
+                }
+            }
+
+            // Winner!
+            selectedCell = null;
+            document.getElementById('message').innerHTML = '<div class="celebration">🎉 You Did It! 🎉</div>';
+            updateCellHighlights();
+        }
+
+        // Touch handling for mobile
+        document.addEventListener('touchstart', function(e) {
+            if (e.target.classList.contains('cell') ||
+                e.target.classList.contains('number-btn') ||
+                e.target.classList.contains('control-btn')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+    </script>
+</body>
+</html>
