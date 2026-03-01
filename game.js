@@ -150,9 +150,14 @@ function renderNumberPad() {
         btn.draggable = true;
         btn.onclick = () => placeNumber(i);
 
-        // Add drag handlers
+        // Add drag handlers for desktop
         btn.addEventListener('dragstart', handleDragStart);
         btn.addEventListener('dragend', handleDragEnd);
+
+        // Add touch handlers for mobile
+        btn.addEventListener('touchstart', handleTouchStart, { passive: false });
+        btn.addEventListener('touchmove', handleTouchMove, { passive: false });
+        btn.addEventListener('touchend', handleTouchEnd, { passive: false });
 
         padEl.appendChild(btn);
     }
@@ -248,7 +253,6 @@ function checkWin() {
 
     selectedCell = null;
     playSound('win');
-    document.getElementById('message').innerHTML = '<div class="celebration">🎉 You Did It! 🌟</div>';
     createConfetti();
     updateCellHighlights();
 }
@@ -273,6 +277,8 @@ function createConfetti() {
 
 // Drag and drop handlers
 let draggedNumber = null;
+let touchDragNumber = null;
+let currentHoverCell = null;
 
 function handleDragStart(e) {
     draggedNumber = parseInt(e.target.dataset.number);
@@ -300,33 +306,87 @@ function handleDrop(e) {
     const col = parseInt(e.currentTarget.dataset.col);
 
     if (draggedNumber && puzzle[row][col] === 0) {
-        userInput[row][col] = draggedNumber;
-
-        if (draggedNumber === solution[row][col]) {
-            playSound('correct');
-            const cells = document.querySelectorAll('.cell');
-            const idx = row * 4 + col;
-            cells[idx].classList.add('correct-pop');
-
-            setTimeout(() => {
-                renderGrid();
-                checkWin();
-            }, 300);
-        } else {
-            playSound('wrong');
-            const cells = document.querySelectorAll('.cell');
-            const idx = row * 4 + col;
-            cells[idx].classList.add('error');
-            cells[idx].textContent = draggedNumber;
-
-            setTimeout(() => {
-                userInput[row][col] = 0;
-                renderGrid();
-            }, 500);
-        }
+        placeNumberInCell(row, col, draggedNumber);
     }
 
     draggedNumber = null;
+}
+
+// Touch handlers for mobile
+function handleTouchStart(e) {
+    e.preventDefault();
+    touchDragNumber = parseInt(e.target.dataset.number);
+    e.target.style.opacity = '0.5';
+}
+
+function handleTouchMove(e) {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const elementUnder = document.elementFromPoint(touch.clientX, touch.clientY);
+
+    // Remove highlight from previous cell
+    if (currentHoverCell && currentHoverCell !== elementUnder) {
+        currentHoverCell.classList.remove('drag-over');
+    }
+
+    // Add highlight to current cell
+    if (elementUnder && elementUnder.classList.contains('cell') && !elementUnder.classList.contains('fixed')) {
+        elementUnder.classList.add('drag-over');
+        currentHoverCell = elementUnder;
+    } else {
+        currentHoverCell = null;
+    }
+}
+
+function handleTouchEnd(e) {
+    e.preventDefault();
+    e.target.style.opacity = '1';
+
+    const touch = e.changedTouches[0];
+    const elementUnder = document.elementFromPoint(touch.clientX, touch.clientY);
+
+    if (currentHoverCell) {
+        currentHoverCell.classList.remove('drag-over');
+    }
+
+    if (elementUnder && elementUnder.classList.contains('cell') && !elementUnder.classList.contains('fixed')) {
+        const row = parseInt(elementUnder.dataset.row);
+        const col = parseInt(elementUnder.dataset.col);
+
+        if (touchDragNumber && puzzle[row][col] === 0) {
+            placeNumberInCell(row, col, touchDragNumber);
+        }
+    }
+
+    touchDragNumber = null;
+    currentHoverCell = null;
+}
+
+function placeNumberInCell(row, col, num) {
+    userInput[row][col] = num;
+
+    if (num === solution[row][col]) {
+        playSound('correct');
+        const cells = document.querySelectorAll('.cell');
+        const idx = row * 4 + col;
+        cells[idx].classList.add('correct-pop');
+
+        setTimeout(() => {
+            renderGrid();
+            checkWin();
+        }, 300);
+    } else {
+        playSound('wrong');
+        const cells = document.querySelectorAll('.cell');
+        const idx = row * 4 + col;
+        cells[idx].classList.add('error');
+        cells[idx].textContent = num;
+
+        setTimeout(() => {
+            userInput[row][col] = 0;
+            renderGrid();
+        }, 500);
+    }
 }
 
 // Touch handling - allow default behavior for clicks to work on mobile
