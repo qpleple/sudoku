@@ -45,9 +45,10 @@
 
         @media (max-width: 420px) {
             body {
-                padding: 8px;
+                padding: 4px;
                 align-items: flex-start;
-                padding-top: 12px;
+                padding-top: 8px;
+                min-height: 100vh;
             }
         }
 
@@ -105,27 +106,7 @@
 
         @media (max-width: 420px) {
             .shape {
-                opacity: 0.1;
-            }
-
-            .shape:nth-child(1) {
-                width: 60px;
-                height: 60px;
-            }
-
-            .shape:nth-child(2) {
-                width: 50px;
-                height: 50px;
-            }
-
-            .shape:nth-child(3) {
-                width: 70px;
-                height: 70px;
-            }
-
-            .shape:nth-child(4) {
-                width: 55px;
-                height: 55px;
+                display: none;
             }
         }
 
@@ -149,7 +130,7 @@
 
         @media (max-width: 420px) {
             .header {
-                margin-bottom: 10px;
+                margin-bottom: 6px;
             }
         }
 
@@ -160,9 +141,16 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             letter-spacing: -0.5px;
             animation: slideDown 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @media (max-width: 420px) {
+            h1 {
+                font-size: clamp(20px, 6vw, 32px);
+                margin-bottom: 2px;
+            }
         }
 
         @keyframes slideDown {
@@ -182,6 +170,12 @@
             font-weight: 400;
         }
 
+        @media (max-width: 420px) {
+            .subtitle {
+                font-size: clamp(11px, 2.5vw, 16px);
+            }
+        }
+
         .message {
             text-align: center;
             font-size: clamp(16px, 4vw, 26px);
@@ -194,8 +188,9 @@
 
         @media (max-width: 420px) {
             .message {
-                margin-bottom: 8px;
-                min-height: 24px;
+                margin-bottom: 4px;
+                min-height: 20px;
+                font-size: clamp(14px, 3.5vw, 22px);
             }
         }
 
@@ -223,9 +218,9 @@
 
         @media (max-width: 420px) {
             .grid-container {
-                padding: 10px;
-                margin-bottom: 12px;
-                border-radius: 24px;
+                padding: 8px;
+                margin-bottom: 8px;
+                border-radius: 20px;
             }
         }
 
@@ -249,7 +244,7 @@
 
         @media (max-width: 420px) {
             .sudoku-grid {
-                gap: 5px;
+                gap: 4px;
             }
         }
 
@@ -343,19 +338,20 @@
 
         @media (max-width: 420px) {
             .cell {
-                border-radius: 12px;
+                border-radius: 10px;
+                font-size: clamp(20px, 6vw, 36px);
             }
 
             .cell:nth-child(5),
             .cell:nth-child(6),
             .cell:nth-child(7),
             .cell:nth-child(8) {
-                margin-top: 5px;
+                margin-top: 4px;
             }
 
             .cell:nth-child(4n+3),
             .cell:nth-child(4n+4) {
-                margin-left: 5px;
+                margin-left: 4px;
             }
         }
 
@@ -369,8 +365,8 @@
 
         @media (max-width: 420px) {
             .number-pad {
-                gap: 8px;
-                margin-bottom: 10px;
+                gap: 6px;
+                margin-bottom: 6px;
             }
         }
 
@@ -401,7 +397,9 @@
 
         @media (max-width: 420px) {
             .number-btn {
-                border-radius: 16px;
+                border-radius: 14px;
+                font-size: clamp(24px, 7vw, 40px);
+                aspect-ratio: 2.2;
             }
         }
 
@@ -457,7 +455,7 @@
 
         @media (max-width: 420px) {
             .controls {
-                gap: 6px;
+                gap: 4px;
             }
         }
 
@@ -489,9 +487,9 @@
 
         @media (max-width: 420px) {
             .control-btn {
-                padding: 12px 6px;
-                font-size: clamp(12px, 3.2vw, 18px);
-                border-radius: 16px;
+                padding: 10px 4px;
+                font-size: clamp(11px, 2.8vw, 16px);
+                border-radius: 12px;
             }
         }
 
@@ -570,6 +568,7 @@
         let solution = [];
         let userInput = [];
         let muted = false;
+        let soundsEnabled = false;
 
         // Sound effects
         const sounds = {
@@ -580,8 +579,23 @@
             newgame: new Audio('sounds/newgame.mp3'),
         };
 
+        // Enable sounds on first user interaction (required for iOS/Safari)
+        function enableSounds() {
+            if (soundsEnabled) return;
+            soundsEnabled = true;
+            // Play silent audio to unlock on iOS
+            Object.values(sounds).forEach(sound => {
+                sound.volume = 0;
+                sound.play().then(() => {
+                    sound.pause();
+                    sound.currentTime = 0;
+                    sound.volume = 1;
+                }).catch(() => {});
+            });
+        }
+
         function playSound(name) {
-            if (muted) return;
+            if (muted || !soundsEnabled) return;
             const s = sounds[name];
             if (s) {
                 s.currentTime = 0;
@@ -598,6 +612,7 @@
         newGame();
 
         function newGame() {
+            enableSounds();
             playSound('newgame');
             document.getElementById('message').innerHTML = '';
             generatePuzzle();
@@ -710,6 +725,7 @@
         }
 
         function selectCell(row, col) {
+            enableSounds();
             if (puzzle[row][col] !== 0) return;
 
             selectedCell = { row, col };
@@ -732,6 +748,7 @@
         }
 
         function placeNumber(num) {
+            enableSounds();
             if (!selectedCell) {
                 showMessage('👆 Pick a square first!');
                 return;
