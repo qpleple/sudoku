@@ -46,7 +46,7 @@
 
         .sudoku-grid {
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 4px;
             background: #333;
             padding: 4px;
@@ -98,7 +98,7 @@
 
         .number-pad {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 10px;
             margin-bottom: 20px;
         }
@@ -167,18 +167,12 @@
             50% { transform: scale(1.1); }
         }
 
-        /* Grid block borders */
-        .cell:nth-child(6n+1),
-        .cell:nth-child(6n+2),
-        .cell:nth-child(6n+3) {
-            position: relative;
-        }
-
-        .cell:nth-child(-n+18) {
+        /* Grid block borders for 4x4 with 2x2 boxes */
+        .cell:nth-child(-n+8) {
             border-bottom: 2px solid #666;
         }
 
-        .cell:nth-child(6n+3) {
+        .cell:nth-child(4n+2) {
             border-right: 2px solid #666;
         }
     </style>
@@ -218,7 +212,7 @@
         }
 
         function generatePuzzle() {
-            // Generate a valid 6x6 sudoku solution
+            // Generate a valid 4x4 sudoku solution
             solution = generateSolution();
 
             // Create puzzle by removing numbers
@@ -226,12 +220,12 @@
             userInput = puzzle.map(row => [...row]);
 
             // Remove numbers to create puzzle (easier for 4yo - remove fewer numbers)
-            const cellsToRemove = 15; // Out of 36 total cells
+            const cellsToRemove = 6; // Out of 16 total cells
             let removed = 0;
 
             while (removed < cellsToRemove) {
-                const row = Math.floor(Math.random() * 6);
-                const col = Math.floor(Math.random() * 6);
+                const row = Math.floor(Math.random() * 4);
+                const col = Math.floor(Math.random() * 4);
 
                 if (puzzle[row][col] !== 0) {
                     puzzle[row][col] = 0;
@@ -242,24 +236,24 @@
         }
 
         function generateSolution() {
-            const grid = Array(6).fill(0).map(() => Array(6).fill(0));
+            const grid = Array(4).fill(0).map(() => Array(4).fill(0));
 
             function isValid(grid, row, col, num) {
                 // Check row
-                for (let x = 0; x < 6; x++) {
+                for (let x = 0; x < 4; x++) {
                     if (grid[row][x] === num) return false;
                 }
 
                 // Check column
-                for (let x = 0; x < 6; x++) {
+                for (let x = 0; x < 4; x++) {
                     if (grid[x][col] === num) return false;
                 }
 
-                // Check 2x3 box
+                // Check 2x2 box
                 const boxRow = Math.floor(row / 2) * 2;
-                const boxCol = Math.floor(col / 3) * 3;
+                const boxCol = Math.floor(col / 2) * 2;
                 for (let i = 0; i < 2; i++) {
-                    for (let j = 0; j < 3; j++) {
+                    for (let j = 0; j < 2; j++) {
                         if (grid[boxRow + i][boxCol + j] === num) return false;
                     }
                 }
@@ -268,10 +262,10 @@
             }
 
             function solve(grid) {
-                for (let row = 0; row < 6; row++) {
-                    for (let col = 0; col < 6; col++) {
+                for (let row = 0; row < 4; row++) {
+                    for (let col = 0; col < 4; col++) {
                         if (grid[row][col] === 0) {
-                            const numbers = [1, 2, 3, 4, 5, 6].sort(() => Math.random() - 0.5);
+                            const numbers = [1, 2, 3, 4].sort(() => Math.random() - 0.5);
                             for (let num of numbers) {
                                 if (isValid(grid, row, col, num)) {
                                     grid[row][col] = num;
@@ -294,8 +288,8 @@
             const gridEl = document.getElementById('grid');
             gridEl.innerHTML = '';
 
-            for (let row = 0; row < 6; row++) {
-                for (let col = 0; col < 6; col++) {
+            for (let row = 0; row < 4; row++) {
+                for (let col = 0; col < 4; col++) {
                     const cell = document.createElement('button');
                     cell.className = 'cell';
                     cell.dataset.row = row;
@@ -318,7 +312,7 @@
             const padEl = document.getElementById('numberPad');
             padEl.innerHTML = '';
 
-            for (let i = 1; i <= 6; i++) {
+            for (let i = 1; i <= 4; i++) {
                 const btn = document.createElement('button');
                 btn.className = 'number-btn';
                 btn.textContent = i;
@@ -337,8 +331,8 @@
         function updateCellHighlights() {
             const cells = document.querySelectorAll('.cell');
             cells.forEach((cell, idx) => {
-                const row = Math.floor(idx / 6);
-                const col = idx % 6;
+                const row = Math.floor(idx / 4);
+                const col = idx % 4;
 
                 cell.classList.remove('selected', 'same-number', 'error');
 
@@ -374,7 +368,7 @@
             } else {
                 // Show error
                 const cells = document.querySelectorAll('.cell');
-                const idx = row * 6 + col;
+                const idx = row * 4 + col;
                 cells[idx].classList.add('error');
                 setTimeout(() => {
                     userInput[row][col] = 0;
@@ -400,8 +394,8 @@
         }
 
         function checkWin() {
-            for (let row = 0; row < 6; row++) {
-                for (let col = 0; col < 6; col++) {
+            for (let row = 0; row < 4; row++) {
+                for (let col = 0; col < 4; col++) {
                     if (userInput[row][col] !== solution[row][col]) {
                         return;
                     }
