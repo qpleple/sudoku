@@ -126,6 +126,11 @@ function renderGrid() {
             } else {
                 cell.textContent = userInput[row][col] || '';
                 cell.onclick = () => selectCell(row, col);
+
+                // Add drag-and-drop handlers
+                cell.addEventListener('dragover', handleDragOver);
+                cell.addEventListener('dragleave', handleDragLeave);
+                cell.addEventListener('drop', handleDrop);
             }
 
             gridEl.appendChild(cell);
@@ -142,7 +147,13 @@ function renderNumberPad() {
         btn.className = 'number-btn';
         btn.dataset.number = i;
         btn.textContent = i;
+        btn.draggable = true;
         btn.onclick = () => placeNumber(i);
+
+        // Add drag handlers
+        btn.addEventListener('dragstart', handleDragStart);
+        btn.addEventListener('dragend', handleDragEnd);
+
         padEl.appendChild(btn);
     }
 }
@@ -258,6 +269,64 @@ function createConfetti() {
             setTimeout(() => confetti.remove(), 3000);
         }, i * 30);
     }
+}
+
+// Drag and drop handlers
+let draggedNumber = null;
+
+function handleDragStart(e) {
+    draggedNumber = parseInt(e.target.dataset.number);
+    e.target.style.opacity = '0.5';
+}
+
+function handleDragEnd(e) {
+    e.target.style.opacity = '1';
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    e.currentTarget.classList.add('drag-over');
+}
+
+function handleDragLeave(e) {
+    e.currentTarget.classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    e.currentTarget.classList.remove('drag-over');
+
+    const row = parseInt(e.currentTarget.dataset.row);
+    const col = parseInt(e.currentTarget.dataset.col);
+
+    if (draggedNumber && puzzle[row][col] === 0) {
+        userInput[row][col] = draggedNumber;
+
+        if (draggedNumber === solution[row][col]) {
+            playSound('correct');
+            const cells = document.querySelectorAll('.cell');
+            const idx = row * 4 + col;
+            cells[idx].classList.add('correct-pop');
+
+            setTimeout(() => {
+                renderGrid();
+                checkWin();
+            }, 300);
+        } else {
+            playSound('wrong');
+            const cells = document.querySelectorAll('.cell');
+            const idx = row * 4 + col;
+            cells[idx].classList.add('error');
+            cells[idx].textContent = draggedNumber;
+
+            setTimeout(() => {
+                userInput[row][col] = 0;
+                renderGrid();
+            }, 500);
+        }
+    }
+
+    draggedNumber = null;
 }
 
 // Touch handling - allow default behavior for clicks to work on mobile

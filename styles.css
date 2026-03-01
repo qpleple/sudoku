@@ -172,6 +172,13 @@ h1 {
     border-width: 3px;
 }
 
+.cell.drag-over {
+    background: #E3F2FD;
+    border-color: #2196F3;
+    border-width: 3px;
+    transform: scale(1.05);
+}
+
 .cell.error {
     background: #FFEBEE;
     border-color: #E53935;
@@ -209,12 +216,18 @@ h1 {
     font-weight: 700;
     border: none;
     border-radius: 12px;
-    cursor: pointer;
+    cursor: grab;
     color: white;
     position: relative;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     transition: all 0.15s ease;
     touch-action: manipulation;
+}
+
+.number-btn:active {
+    cursor: grabbing;
+    transform: translateY(2px);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
 }
 
 @media (max-width: 420px) {
@@ -223,11 +236,6 @@ h1 {
         font-size: clamp(60px, 15vw, 84px);
         aspect-ratio: 2.2;
     }
-}
-
-.number-btn:active {
-    transform: translateY(2px);
-    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
 }
 
 .number-btn[data-number="1"] {
