@@ -335,17 +335,39 @@ function getClosestEmptyCell(x, y) {
 }
 
 function handleDragStart(e) {
+    unlockSounds();
     draggedNumber = parseInt(e.target.dataset.number);
     e.target.style.opacity = '0.5';
+    playSound('tap');
 }
 
 function handleDragEnd(e) {
     e.target.style.opacity = '1';
+
+    // Clean up closest cell highlight
+    if (currentClosestCell) {
+        currentClosestCell.classList.remove('drag-closest');
+        currentClosestCell = null;
+    }
 }
 
 function handleDragOver(e) {
     e.preventDefault();
-    e.currentTarget.classList.add('drag-over');
+    const cell = e.currentTarget;
+
+    // Highlight cell being hovered
+    cell.classList.add('drag-over');
+
+    // Track and highlight closest cell for desktop drag
+    if (currentClosestCell !== cell) {
+        if (currentClosestCell) {
+            currentClosestCell.classList.remove('drag-closest');
+        }
+        cell.classList.add('drag-closest');
+        currentClosestCell = cell;
+        // Play sound when closest cell changes
+        playSound('tap');
+    }
 }
 
 function handleDragLeave(e) {
@@ -390,6 +412,9 @@ function handleTouchMove(e) {
     if (!isDragging && (deltaX > 10 || deltaY > 10 || timeDelta > 200)) {
         isDragging = true;
         e.preventDefault();
+
+        // Play sound when drag starts
+        playSound('tap');
 
         // Now create the drag ghost
         e.target.style.opacity = '0.5';
@@ -437,6 +462,8 @@ function handleTouchMove(e) {
         if (closestCell) {
             closestCell.classList.add('drag-closest');
             currentClosestCell = closestCell;
+            // Play sound when closest cell changes
+            playSound('tap');
         }
     }
 }
