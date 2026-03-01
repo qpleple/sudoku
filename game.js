@@ -299,6 +299,10 @@ let touchDragNumber = null;
 let currentHoverCell = null;
 let currentClosestCell = null;
 let dragGhost = null;
+let touchStartTime = 0;
+let touchStartX = 0;
+let touchStartY = 0;
+let isDragging = false;
 
 function getClosestEmptyCell(x, y) {
     const cells = document.querySelectorAll('.cell:not(.fixed)');
@@ -358,34 +362,44 @@ function handleDrop(e) {
 
 // Touch handlers for mobile
 function handleTouchStart(e) {
-    e.preventDefault();
-
     // Unlock sounds on first touch
     unlockSounds();
 
-    touchDragNumber = parseInt(e.target.dataset.number);
-    e.target.style.opacity = '0.5';
-
-    // Create drag ghost element
-    dragGhost = document.createElement('div');
-    dragGhost.className = 'drag-ghost';
-    dragGhost.textContent = touchDragNumber;
-
-    // Set color based on number
-    const colors = ['#E91E63', '#FF6D00', '#00BFA5', '#2196F3'];
-    dragGhost.style.background = colors[touchDragNumber - 1];
-
-    document.body.appendChild(dragGhost);
-
-    // Position at touch point
     const touch = e.touches[0];
-    dragGhost.style.left = touch.clientX + 'px';
-    dragGhost.style.top = touch.clientY + 'px';
+    touchStartTime = Date.now();
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+    isDragging = false;
+
+    touchDragNumber = parseInt(e.target.dataset.number);
 }
 
 function handleTouchMove(e) {
-    e.preventDefault();
     const touch = e.touches[0];
+    const deltaX = Math.abs(touch.clientX - touchStartX);
+    const deltaY = Math.abs(touch.clientY - touchStartY);
+    const timeDelta = Date.now() - touchStartTime;
+
+    // Start dragging if moved more than 10px or held for more than 200ms
+    if (!isDragging && (deltaX > 10 || deltaY > 10 || timeDelta > 200)) {
+        isDragging = true;
+        e.preventDefault();
+
+        // Now create the drag ghost
+        e.target.style.opacity = '0.5';
+        dragGhost = document.createElement('div');
+        dragGhost.className = 'drag-ghost';
+        dragGhost.textContent = touchDragNumber;
+
+        // Set color based on number
+        const colors = ['#E91E63', '#FF6D00', '#00BFA5', '#2196F3'];
+        dragGhost.style.background = colors[touchDragNumber - 1];
+
+        document.body.appendChild(dragGhost);
+    }
+
+    if (!isDragging) return;
+    e.preventDefault();
 
     // Move drag ghost with touch
     if (dragGhost) {
@@ -422,16 +436,22 @@ function handleTouchMove(e) {
 }
 
 function handleTouchEnd(e) {
-    e.preventDefault();
     e.target.style.opacity = '1';
+
+    // If it was a tap (not a drag), trigger the click
+    if (!isDragging) {
+        // Let the onclick handler work
+        touchDragNumber = null;
+        return;
+    }
+
+    e.preventDefault();
 
     // Remove drag ghost
     if (dragGhost) {
         dragGhost.remove();
         dragGhost = null;
     }
-
-    const touch = e.changedTouches[0];
 
     // Remove all highlights
     if (currentHoverCell) {
@@ -454,6 +474,7 @@ function handleTouchEnd(e) {
     touchDragNumber = null;
     currentHoverCell = null;
     currentClosestCell = null;
+    isDragging = false;
 }
 
 function placeNumberInCell(row, col, num) {
